@@ -1,3 +1,6 @@
+#ifndef IRC_H
+#define IRC_H
+
 #include <unistd.h>
 #include <netdb.h>
 #include <sys/types.h>
@@ -36,3 +39,5 @@ public:
 std::tuple<int, std::string> parse(std::string const &);
 
 } // namespace irc
+
+#endif // IRC_H
