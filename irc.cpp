@@ -48,13 +48,28 @@ irc::connection::connection(std::string const & host, std::string const & port) 
 
     inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr), addressbuff, sizeof addressbuff);
 
+    socklen_t optsz = sizeof(insz); 
+    getsockopt(this->sockfd, SOL_SOCKET, SO_RCVBUF, (void *)&insz, &optsz); // let's make our buffers match
+    this->inbuf = std::make_unique<char[]>(this->insz); 
+
     this->name_s = p->ai_canonname;
     freeaddrinfo(servinfo); // all done with this structure
 
 };
 
+// a raw interface for testing / debugging
+// don't forget to add '/r/n'
 void irc::connection::send_str(std::string const & msg) {
     send(this->sockfd, msg.c_str(), msg.length(), 0);
+}
+
+// a raw interface for testing / debugging
+std::string irc::connection::get_str(){
+    char buf[512];
+    recv(this->sockfd, buf, 511, 0);
+
+    return std::string(buf);
+    
 }
 
 std::tuple<int,std::string> irc::parse(std::string const & msg) {
@@ -64,6 +79,7 @@ std::tuple<int,std::string> irc::parse(std::string const & msg) {
                  C, CA, CAP,
                  M, MO, MOD, MODE
                 };
+
     enum states state = OPEN;
 
     int j = 0;

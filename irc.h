@@ -24,6 +24,9 @@ private:
     std::string name_s;
     std::string uname_s;
     std::string nick_s;
+    int insz;
+    //char in_buf[insz];
+    std::unique_ptr<char[]> inbuf;
     //int sockfd;
 
 public:
@@ -33,6 +36,7 @@ public:
         return this->name_s;
     };
     void send_str(std::string const &);
+    std::string get_str();
 
 };
 
