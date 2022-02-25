@@ -1,4 +1,4 @@
-.swp
+*.swp
 build/
 /.vs/ircb/v16/ipch/AutoPCH/2da708422d097afc/CLIENT.ipch
 /.vs/ircb/config/applicationhost.config
