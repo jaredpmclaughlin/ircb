@@ -1,2 +1,11 @@
 .swp
 build/
+/.vs/ircb/v16/ipch/AutoPCH/2da708422d097afc/CLIENT.ipch
+/.vs/ircb/config/applicationhost.config
+/.vs/ircb/v16/ipch/AutoPCH/547635a7e1940615/IRC.ipch
+/.vs/ircb/v16/ipch/AutoPCH/7ff8fcadc1a4cebf/IRC.ipch
+/.vs/ircb/v16/ipch/AutoPCH/9cbf11ed54b3e8aa/IRC_PROTOCOL_TESTS.ipch
+/.vs/ircb/v16/.suo
+/.vs/ircb/v16/Browse.VC.db
+/.vs/ircb/v16
+/.vs

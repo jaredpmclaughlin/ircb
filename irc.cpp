@@ -35,7 +35,12 @@ irc::connection::connection(std::string const & host, std::string const & port) 
         }
 
         if (connect(this->sockfd, p->ai_addr, p->ai_addrlen) == -1) {
+#ifdef _WIN64
+            closesocket(this->sockfd);
+#else
             close(this->sockfd);
+#endif
+
             continue;
         }
 

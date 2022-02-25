@@ -53,8 +53,11 @@ int main(int argc, char *argv[])
         printf("%s",buf);
     } while (numbytes != 0);
 
+#ifdef _WIN64
+    closesocket(to->sockfd);
+#else
     close(to->sockfd);
-
+#endif // _WIN64
     return 0;
 }
 

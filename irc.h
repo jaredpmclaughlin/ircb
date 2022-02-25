@@ -1,13 +1,25 @@
 #ifndef IRC_H
 #define IRC_H
 
-#include <unistd.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
+#ifndef _WIN64
+    #include <unistd.h>
+    #include <netdb.h>
+    #include <sys/types.h>
+    #include <netinet/in.h>
+    #include <sys/socket.h>
+    #include <arpa/inet.h>
+#else
+    #ifndef WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN
+    #endif
+#pragma comment(lib, "Ws2_32.lib")
+// winsock headers here
+    #include <winsock2.h>
+    #include <ws2tcpip.h> // IPv6
+    #include<stdexcept>
 
-#include <arpa/inet.h>
+#endif
+
 
 #include <memory>
 #include <string>
