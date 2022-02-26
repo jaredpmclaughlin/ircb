@@ -1,6 +1,4 @@
 #include "irc.h"
-#include "tclap/CmdLine.h"
-
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)

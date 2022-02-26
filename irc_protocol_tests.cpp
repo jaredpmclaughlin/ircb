@@ -1,4 +1,5 @@
 #include "irc.h"
+#include <args.h>
 #include "gtest/gtest.h"
 
 namespace {
@@ -13,5 +14,10 @@ TEST (IRC, PARSE){
 
     rval = std::make_tuple(1,"1234");
     EXPECT_EQ(rval, irc::parse(test_in));
+}
+
+TEST (COMMANDLINE, PARSE){
+    /* this should probably be in it's own test file, but here it is. */
+    EXPECT_EQ(0,cmdargs::parse(1));
 }
 }
