@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(ircb)
 
+
 include(FetchContent)
 FetchContent_Declare(
     googletest
@@ -11,6 +12,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 add_executable( ircb client.cpp irc.cpp )
+include_directories(include)
 
 add_executable( parse_test irc_protocol_tests.cpp irc.cpp )
 target_link_libraries( parse_test gtest_main )
