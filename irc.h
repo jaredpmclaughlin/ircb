@@ -8,6 +8,7 @@
     #include <netinet/in.h>
     #include <sys/socket.h>
     #include <arpa/inet.h>
+    #include <stdexcept>
 #else
     #ifndef WIN32_LEAN_AND_MEAN
         #define WIN32_LEAN_AND_MEAN

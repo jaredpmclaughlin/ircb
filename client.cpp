@@ -19,7 +19,8 @@ int main(int argc, char *argv[])
     to->send_str("NICK booboo\r\n");
     to->send_str("USER d * 0 : a good name\r\n");
 
-    std::string tok_val ;
+    std::string val;
+    int tok;
 
     int joined = 0;
 
