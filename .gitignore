@@ -9,3 +9,5 @@ build/
 /.vs/ircb/v16/Browse.VC.db
 /.vs/ircb/v16
 /.vs
+.vscode/
+.cccc/

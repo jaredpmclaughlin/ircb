@@ -1,8 +1,10 @@
 #include <iostream>
 #include "irc.h"
+#include <tclap/CmdLine.h>
 
 int main(int argc, char *argv[])
 {
+
     int numbytes;
     char buf[MAXDATASIZE];
     std::string bufs;

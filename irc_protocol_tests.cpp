@@ -1,5 +1,5 @@
 #include "irc.h"
-#include <args.h>
+#include "args.h"
 #include "gtest/gtest.h"
 
 namespace {
@@ -18,6 +18,27 @@ TEST (IRC, PARSE){
 
 TEST (COMMANDLINE, PARSE){
     /* this should probably be in it's own test file, but here it is. */
-    EXPECT_EQ(0,cmdargs::parse(1));
+    int n = 5;
+    char argl[5][25] = { 
+                    "ircb",
+                    "-c",
+                    "irc.freenode.net",
+                    "-n",
+                    "norias" 
+                    };
+
+    char *args[n];
+
+    for(int i=0; i<n; i++){
+        args[i] = argl[i];
+    };
+
+    ircb::args.parse(n,&args[0]);
+
+//    std::cerr<<ircb::args.serverName<<std::endl;
+//    std::cerr<<ircb::args.userName<<std::endl;
+
+    EXPECT_EQ("irc.freenode.net",ircb::args.serverName);
+    EXPECT_EQ("norias",ircb::args.userName);
 }
 }

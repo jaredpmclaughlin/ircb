@@ -20,12 +20,10 @@ target_link_libraries( parse_test gtest_main )
 include(GoogleTest)
 
 if (UNIX)
-set(CMAKE_CXX_STANDARD 17)
-target_compile_options(ircb PUBLIC -std=c++17 -g)
+    set(CMAKE_CXX_STANDARD 17)
+    target_compile_options(ircb PUBLIC -std=c++17 -g)
+    target_compile_options(parse_test PUBLIC -std=c++17 -g)
 elseif(WIN32)
-
-target_compile_options(ircb PRIVATE "/std:c++20")
-#target_compile_options(irc PRIVATE "/std:c++20")
-target_compile_options(parse_test PRIVATE "/std:c++20")
-
+    target_compile_options(ircb PRIVATE "/std:c++20")
+    target_compile_options(parse_test PRIVATE "/std:c++20")
 endif()
