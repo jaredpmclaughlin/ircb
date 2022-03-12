@@ -4,7 +4,7 @@ namespace ircb {
 
     struct {
         std::string serverName;
-        std::string userName;
+        std::string nickName;
         int port;
 
         void parse(int argc, char **argv){
@@ -14,7 +14,7 @@ namespace ircb {
                 // flag, one word name, description, required?, default value, human readable description, assignment
                 TCLAP::ValueArg<std::string> sNameArg("c", "serverName", "irc server name", true, "",  
                     "Fully qualified domain name of the server.", cmd);
-                TCLAP::ValueArg<std::string> uNameArg("n", "nickName", "nick for irc", true, "", 
+                TCLAP::ValueArg<std::string> nNameArg("n", "nickName", "nick for irc", true, "", 
                     "The nick to use on this irc server.", cmd);
                 TCLAP::ValueArg<int> portArg("p", "port", "port for irc", false, 6667, 
                     "The port to use on this irc server.", cmd);
@@ -22,7 +22,7 @@ namespace ircb {
                 cmd.parse(argc,argv);
 
                 this->serverName = sNameArg.getValue();
-                this->userName = uNameArg.getValue();
+                this->nickName = nNameArg.getValue();
                 this->port = portArg.getValue();
             } // try
             catch (TCLAP::ArgException &e){
