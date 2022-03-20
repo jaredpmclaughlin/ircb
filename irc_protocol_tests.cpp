@@ -31,9 +31,9 @@ TEST (COMMANDLINE, FULL_CORRECT){
     char argl[5][25] = { 
                     "ircb",
                     "-c",
-                    "irc.freenode.net",
+                    "ircserver.net",
                     "-n",
-                    "norias" 
+                    "username" 
                     };
 
     char *args[n];
@@ -44,8 +44,8 @@ TEST (COMMANDLINE, FULL_CORRECT){
 
     ircb::args.parse(n,&args[0]);
 
-    EXPECT_EQ("irc.freenode.net",ircb::args.serverName);
-    EXPECT_EQ("norias",ircb::args.nickName);
+    EXPECT_EQ("ircserver.net",ircb::args.serverName);
+    EXPECT_EQ("username",ircb::args.nickName);
 }
 
 TEST (COMMANDLINE, MISSING_NICK){
@@ -54,7 +54,7 @@ TEST (COMMANDLINE, MISSING_NICK){
     char argl[n][25] = { 
                     "ircb",
                     "-c",
-                    "irc.freenode.net",
+                    "ircserver.net",
                     };
 
     char *args[n];
@@ -70,5 +70,51 @@ TEST (COMMANDLINE, MISSING_NICK){
     EXPECT_DEATH( ircb::args.parse(n,&args[0]), "c*" );
 }
    
+TEST (COMMANDLINE, MISSING_SERVER){
+
+    int n = 3;
+    char argl[n][25] = { 
+                    "ircb",
+                    "-n",
+                    "username",
+                    };
+
+    char *args[n];
+
+    for(int i=0; i<n; i++){
+        args[i] = argl[i];
+    };
+
+    /* The program exits and gives an error message, so we check for that.
+     * Note that you can check for the _correct_ error message, but I'm
+     * not ready for that depth, yet. The c* regex matches anything. 
+     */
+    EXPECT_DEATH( ircb::args.parse(n,&args[0]), "c*" );
+}
+
+TEST (COMMANDLINE, NICK_W_SPACE){
+
+    int n = 5;
+    char argl[n][25] = { 
+                    "ircb",
+                    "-n",
+                    "user name",
+                    "-c",
+                    "ircserver.net"
+                    };
+
+    char *args[n];
+
+    for(int i=0; i<n; i++){
+        args[i] = argl[i];
+    };
+
+    /* The program exits and gives an error message, so we check for that.
+     * Note that you can check for the _correct_ error message, but I'm
+     * not ready for that depth, yet. The c* regex matches anything. 
+     */
+    EXPECT_DEATH( ircb::args.parse(n,&args[0]), "c*" );
+}
+
 
 }
