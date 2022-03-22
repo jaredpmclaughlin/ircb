@@ -94,13 +94,31 @@ TEST (COMMANDLINE, MISSING_SERVER){
 
 TEST (COMMANDLINE, NICK_W_SPACE){
 
-    int n = 5;
+    int n = 6;
     char argl[n][25] = { 
                     "ircb",
                     "-n",
-                    "user name",
+                    "user",
+                    "name",
                     "-c",
                     "ircserver.net"
+                    };
+
+    char *args[n];
+
+    for(int i=0; i<n; i++){
+        args[i] = argl[i];
+    };
+
+    //EXPECT_ANY_THROW( ircb::args.parse(n,&args[0]) );
+    EXPECT_DEATH(ircb::args.parse(n,&args[0]),"c*");
+}
+
+TEST (COMMANDLINE, NO_ARGS){
+
+    int n = 1;
+    char argl[n][25] = { 
+                    "ircb"
                     };
 
     char *args[n];
@@ -115,6 +133,5 @@ TEST (COMMANDLINE, NICK_W_SPACE){
      */
     EXPECT_DEATH( ircb::args.parse(n,&args[0]), "c*" );
 }
-
 
 }

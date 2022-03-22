@@ -1,6 +1,6 @@
 #include <iostream>
 #include "irc.h"
-#include <tclap/CmdLine.h>
+#include "args.h"
 
 int main(int argc, char *argv[])
 {
@@ -9,10 +9,13 @@ int main(int argc, char *argv[])
     char buf[MAXDATASIZE];
     std::string bufs;
 
-    std::string server = std::string(argv[1]);
+    //std::string server = std::string(argv[1]);
+    //std::string server
     std::string port = std::string("6667");
 
-    std::shared_ptr<irc::connection> to = std::make_shared<irc::connection>(server,port);
+    ircb::args.parse(argc, argv);
+
+    std::shared_ptr<irc::connection> to = std::make_shared<irc::connection>(ircb::args.serverName,port);
 
     std::cout<<"Connecting to "<<to->name()<<" ... ";
     std::cout<<std::endl<<std::endl;
