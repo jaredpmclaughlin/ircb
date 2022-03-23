@@ -10,6 +10,8 @@ void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
+irc::connection::connection(std::string const & host, int port) : connection{host, std::to_string(port) } {};
+
 irc::connection::connection(std::string const & host, std::string const & port) {
 
     struct addrinfo *servinfo, *p;

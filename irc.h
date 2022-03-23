@@ -44,6 +44,7 @@ private:
 public:
     int sockfd;
     connection(std::string const &, std::string const &);
+    connection(std::string const &, int);
     std::string name() {
         return this->name_s;
     };

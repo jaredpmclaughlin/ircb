@@ -26,9 +26,8 @@ namespace ircb {
                 this->nickName = nNameArg.getValue();
                 this->port = portArg.getValue();
             } // try
-            catch (std::exception &e){
- //               std::cerr<<"error: "<<e.error() << "for arg "<<e.argId() << std::endl;
-                throw 20;
+            catch (TCLAP::ArgException &e){
+                std::cerr<<"error: "<<e.error() << "for arg "<<e.argId() << std::endl;
             }
         } // parse
     } args;
