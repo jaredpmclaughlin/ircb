@@ -14,3 +14,7 @@ To build on Windows with MSVC,
   2. build
 
 You will have to set up your project to pass arguments to the binary.
+
+To build on Mac OS X with VSCode,
+  1. clone from git
+  2. build with gcc - it will not build with AppleClang
