@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.16)
 
 project(ircb)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 include(FetchContent)
 FetchContent_Declare(
     googletest
@@ -11,6 +13,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 add_executable( ircb client.cpp irc.cpp )
+include_directories(include)
 
 add_executable( parse_test irc_protocol_tests.cpp irc.cpp )
 target_link_libraries( parse_test gtest_main )
@@ -18,27 +21,11 @@ target_link_libraries( parse_test gtest_main )
 include(GoogleTest)
 
 if (UNIX)
-set(CMAKE_CXX_STANDARD 17)
-target_compile_options(ircb PUBLIC -std=c++17 -g)
-	if ( CMAKE_CXX_COMPILER_ID MATCHES "AppleClang" )
-		# there are still build issues with AppleClang
-		target_compile_options(ircb PUBLIC -std=c++1z -g)
-		target_compile_options(ircb PUBLIC -std=c++1z -g)
-	else()
-		target_compile_options(ircb PUBLIC -std=c++17 -g)
-		target_compile_options(parse_test PUBLIC -std=c++17 -g)
-	endif()
+    set(CMAKE_CXX_STANDARD 17)
+    target_compile_options(ircb PUBLIC -std=c++17 -g)
+    target_compile_options(parse_test PUBLIC -std=c++17 -g)
+
 elseif(WIN32)
-
-#add_executable(ircb client.cpp)
-#add_executable(parse_test irc_protocol_tests.cpp)
-
-#add_library(irc OBJECT irc.cpp)
-#target_link_libraries(parse_test gtest_main irc)
-#target_link_libraries(ircb irc)
-
-target_compile_options(ircb PRIVATE "/std:c++20")
-#target_compile_options(irc PRIVATE "/std:c++20")
-target_compile_options(parse_test PRIVATE "/std:c++20")
-
+    target_compile_options(ircb PRIVATE "/std:c++20")
+    target_compile_options(parse_test PRIVATE "/std:c++20")
 endif()

@@ -1,22 +1,38 @@
 #include <iostream>
 #include "irc.h"
+#include "args.h"
 
 int main(int argc, char *argv[])
 {
+
     int numbytes;
     char buf[MAXDATASIZE];
     std::string bufs;
 
-    std::string server = std::string(argv[1]);
+    //std::string server = std::string(argv[1]);
+    //std::string server
     std::string port = std::string("6667");
 
-    std::shared_ptr<irc::connection> to = std::make_shared<irc::connection>(server,port);
+    ircb::args.parse(argc, argv);
+
+    std::shared_ptr<irc::connection> to = nullptr;
+
+    try {
+        to = std::make_shared<irc::connection>(ircb::args.serverName,ircb::args.port);
+    }
+
+    catch(std::runtime_error &e){
+        std::cerr<<e.what()<<std::endl;
+        return -1;
+    }
 
     std::cout<<"Connecting to "<<to->name()<<" ... ";
     std::cout<<std::endl<<std::endl;
 
     to->send_str("CAP LS 302\r\n");
-    to->send_str("NICK booboo\r\n");
+    to->send_str("NICK ");
+    to->send_str(ircb::args.nickName);
+    to->send_str("\r\n");
     to->send_str("USER d * 0 : a good name\r\n");
 
     std::string val;
