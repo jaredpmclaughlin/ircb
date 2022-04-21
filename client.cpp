@@ -9,10 +9,7 @@ int main(int argc, char *argv[])
     char buf[MAXDATASIZE];
     std::string bufs;
 
-    //std::string server = std::string(argv[1]);
-    //std::string server
     std::string port = std::string("6667");
-
     ircb::args.parse(argc, argv);
 
     std::shared_ptr<irc::connection> to = nullptr;
@@ -28,12 +25,15 @@ int main(int argc, char *argv[])
 
     std::cout<<"Connecting to "<<to->name()<<" ... ";
     std::cout<<std::endl<<std::endl;
-
-    to->send_str("CAP LS 302\r\n");
+/*
+    to->send_str("CAP LS 302n");
     to->send_str("NICK ");
     to->send_str(ircb::args.nickName);
-    to->send_str("\r\n");
-    to->send_str("USER d * 0 : a good name\r\n");
+    to->send_str("");
+    to->send_str("USER d * 0 : a good name");
+*/
+
+    to->handshake(ircb::args.nickName);    
 
     std::string val;
     int tok;

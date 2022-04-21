@@ -65,9 +65,9 @@ irc::connection::connection(std::string const & host, std::string const & port) 
 };
 
 // a raw interface for testing / debugging
-// don't forget to add '/r/n'
 void irc::connection::send_str(std::string const & msg) {
     send(this->sockfd, msg.c_str(), msg.length(), 0);
+    send(this->sockfd, "\r\n", 4, 0);
 }
 
 // a raw interface for testing / debugging
@@ -77,6 +77,14 @@ std::string irc::connection::get_str(){
 
     return std::string(buf);
     
+}
+
+void irc::connection::handshake(std::string const &nick){
+    send(this->sockfd, "CAP LS 302\r\n", 12, 0);
+    send(this->sockfd, "NICK ", 5,0);
+    send(this->sockfd, nick.c_str(), nick.length(), 0);
+    send(this->sockfd, "\r\n",4,0);
+    send(this->sockfd, "USER d * 0 : A Name\r\n", 23, 0);
 }
 
 std::tuple<int,std::string> irc::parse(std::string const & msg) {

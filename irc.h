@@ -49,6 +49,7 @@ public:
     std::string name() {
         return this->name_s;
     };
+    void handshake(std::string const&);
     void send_str(std::string const &);
     std::string get_str();
 
