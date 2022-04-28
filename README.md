@@ -18,3 +18,7 @@ You will have to set up your project to pass arguments to the binary.
 To build on Mac OS X with VSCode,
   1. clone from git
   2. build with gcc - it will not build with AppleClang
+
+Checking test coverage can be done by running the following in the build directory:
+
+gcovr -r .. -e _deps
