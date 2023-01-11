@@ -1,5 +1,5 @@
 # ircb
-An irc bot. 
+An irc bot framework / library with an example client. 
 
 To build on Linux, 
   1.  mkdir build
