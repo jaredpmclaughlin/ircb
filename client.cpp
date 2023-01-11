@@ -1,13 +1,16 @@
+#ifndef CALLGRAPH
 #include <iostream>
+#include <cassert>
 #include "irc.h"
 #include "args.h"
+#endif
 
 int main(int argc, char *argv[])
 {
 
     int numbytes;
-    char buf[MAXDATASIZE];
-    std::string bufs;
+    char buf[MAXDATASIZE+1];
+    char line[MAXDATASIZE+1];
 
     std::string port = std::string("6667");
     ircb::args.parse(argc, argv);
@@ -25,50 +28,74 @@ int main(int argc, char *argv[])
 
     std::cout<<"Connecting to "<<to->name()<<" ... ";
     std::cout<<std::endl<<std::endl;
-/*
-    to->send_str("CAP LS 302n");
-    to->send_str("NICK ");
-    to->send_str(ircb::args.nickName);
-    to->send_str("");
-    to->send_str("USER d * 0 : a good name");
-*/
 
     to->handshake(ircb::args.nickName);    
 
+    std::cout<<"Handshake complete"<<std::endl;
     std::string val;
     int tok;
-//force a change
     int joined = 0;
+    int pos=0;
 
     do {
-        if ((numbytes = recv(to->sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
+/*
+        if ((numbytes = recv(to->sockfd, buf, MAXDATASIZE, 0)) == -1) {
             perror("recv");
             exit(1);
         }
 
-        buf[numbytes] = '\0';
-        bufs = buf;
-        auto [tok, val] = irc::parse(bufs);
+        irc::message msg;
+        std::string bufs;
+        
+        int i=0;        
+        for(;i<MAXDATASIZE-2 && buf[i]!='\r' && buf[i+1]!='\n';i++);
 
-        switch(tok) {
-        case 1:
-            to->send_str("PONG :");
-            to->send_str(val);
-            to->send_str("\r\n");
+        buf[i]='\0';
+        bufs.append(buf);
+        msg.set_all(bufs);
+
+        std::cout<<"* "<<bufs<<std::endl;
+        bufs=buf[i+1];
+*/
+        std::unique_ptr<irc::message> msg = to->next_msg(); 
+        //std::cout<<"*+*"<<msg->get_command()<<" / "<<msg->get_parameters();
+        std::cout<<msg->get_source()<<" "<<msg->get_command()<<" "<<msg->get_parameters();
+        std::string tmp_msg = msg->get_command();
+        tmp_msg.append(" ");
+        tmp_msg.append(msg->get_parameters());
+        
+        switch(msg->get_cmd()) {
+        default:
+        case 0:
+            //std::cout<<" +++ "<<msg->get_command()<<std::endl;
             break;
-        case 2:
+        case irc::PING:
+            to->pong(msg->get_parameters());
+            std::cout<<"PONG "<<msg->get_parameters()<<std::endl;
+            break;
+        case irc::CAP:
+            std::cout<<"CAP END"<<std::endl;
             to->send_str("CAP END");
-            to->send_str("\r\n");
             break;
-        case 3:
-            if( !joined ) {
-                to->send_str("JOIN #antisocial\r\n");
-                joined++;
-            };
+        case irc::INVITE:
+            //start=msg.get_parameters().find('#');
+            //end=msg.get_parameters().size();
+            //to->join(msg.get_parameters().substr(start,(end-start)));
+            to->join(msg->get_channel());
             break;
         };
-        printf("%s",buf);
-    } while (numbytes != 0);
+       /* 
+        if ( tail!=(bufs.size()-2) ){
+            int length=0;
+            length=bufs.size()-tail;
+            bufs=bufs.substr(tail+2,length);
+            bufs.resize(length);
+        } else bufs.clear();
+        */ 
+        //bufs.clear();
+        
+    //} while (numbytes != 0);
+    } while (1);
 
 #ifdef _WIN64
     closesocket(to->sockfd);

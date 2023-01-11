@@ -1,4 +1,7 @@
+#ifndef CALLGRAPH
 #include "irc.h"
+#endif
+#include <iostream>
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -35,7 +38,7 @@ irc::connection::connection(std::string const & host, std::string const & port) 
         if ((this->sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1 ) {
             continue;
         }
-
+        
         if (connect(this->sockfd, p->ai_addr, p->ai_addrlen) == -1) {
 #ifdef _WIN64
             closesocket(this->sockfd);
@@ -58,7 +61,16 @@ irc::connection::connection(std::string const & host, std::string const & port) 
     socklen_t optsz = sizeof(insz); 
     getsockopt(this->sockfd, SOL_SOCKET, SO_RCVBUF, (void *)&insz, &optsz); // let's make our buffers match
     this->inbuf = std::make_unique<char[]>(this->insz); 
+/*
+    int val;
+    if((val=fcntl(this->sockfd,F_GETFL,0))<0) 
+        throw std::runtime_error("Connection error getting file descriptor flags.");
 
+    val |= O_NONBLOCK;
+
+    if( fcntl(this->sockfd,F_SETFL,val)<0) 
+        throw std::runtime_error("Connection error setting file descriptor flags."); 
+*/
     this->name_s = p->ai_canonname;
     freeaddrinfo(servinfo); // all done with this structure
 
@@ -67,7 +79,7 @@ irc::connection::connection(std::string const & host, std::string const & port) 
 // a raw interface for testing / debugging
 void irc::connection::send_str(std::string const & msg) {
     send(this->sockfd, msg.c_str(), msg.length(), 0);
-    send(this->sockfd, "\r\n", 4, 0);
+    send(this->sockfd, "\r\n", 2, 0);
 }
 
 // a raw interface for testing / debugging
@@ -76,119 +88,144 @@ std::string irc::connection::get_str(){
     recv(this->sockfd, buf, 511, 0);
 
     return std::string(buf);
-    
 }
 
 void irc::connection::handshake(std::string const &nick){
     send(this->sockfd, "CAP LS 302\r\n", 12, 0);
+    // missing PASS ?
     send(this->sockfd, "NICK ", 5,0);
     send(this->sockfd, nick.c_str(), nick.length(), 0);
-    send(this->sockfd, "\r\n",4,0);
-    send(this->sockfd, "USER d * 0 : A Name\r\n", 23, 0);
+    send(this->sockfd, "\r\n",2,0);
+    send(this->sockfd, "USER d * 0 : A Name\r\n", 21, 0);
 }
+
+void irc::connection::pong(std::string const & token){
+    this->send_str("PONG "+token);
+}
+
+void irc::connection::join(std::string const & channel){
+    this->send_str("JOIN "+channel);
+}
+
+void irc::connection::read_socket(){
+    this->insz=0;
+    int i=0;
+    do {
+    //for( ; !((this->in_buf[i])=='\n'); i++) {
+        if( (this->insz=recv(this->sockfd, (void *)&(this->in_buf[i]),1,0))==-1 ){
+            perror("recv");
+            exit(1);
+        }
+        i++;
+    } while(this->in_buf[i-1]!='\n');
+    this->insz=i;
+    this->in_buf[MAXDATASIZE]='\0'; //guard
+}
+
+
+//irc::message & irc::connection::next_msg() {
+std::unique_ptr<irc::message> irc::connection::next_msg(){
+    this->read_socket();
+    std::unique_ptr<message> tmp = std::make_unique<message>();
+    tmp->set_all(this->in_buf);
+    this->msg_list.push_back(std::move(tmp));
+    tmp=std::move(this->msg_list.front()); 
+    this->msg_list.pop_front();
+    //return *tmp;
+    return std::move(tmp);
+};
+
+std::string & irc::message::toString(){
+    std::unique_ptr<std::string> tmp = std::make_unique<std::string>();
+    tmp->assign(this->source);
+    tmp->append(this->command);
+    tmp->append(this->parameters);
+    return *tmp;
+}
+
+std::map<std::string,int> tokens {
+  
+    {"INVITE",irc::INVITE}, 
+    {"CAP",irc::CAP}, 
+    {"PING",irc::PING},
+    {"NONE",0}
+    };
 
 std::tuple<int,std::string> irc::parse(std::string const & msg) {
+    char token[512];
+    std::map<std::string,int>::iterator it;
 
-    enum states {OPEN,
-                 P, PI, PIN, PING,
-                 C, CA, CAP,
-                 M, MO, MOD, MODE
-                };
-
-    enum states state = OPEN;
-
-    int j = 0;
-    char token[20];
-    std::string token_s;
-    enum tokens {NONE_T, PING_T, CAP_T, MODE_T};
-    enum tokens tok_r = NONE_T;
-
-    for( int i = 0; i < msg.length() ; i++) {
-
-        switch(state) {
-
-        case OPEN:
-
-            switch ( msg[i] ) {
-            case 'P':
-                state = P;
-                break;
-            case 'C':
-                state = C;
-                break;
-            case 'M':
-                state = M;
-                break;
-            };
-            break;
-
-        case P:
-            if ( msg[i] == 'I') {
-                state = PI;
-            }
-            else state = OPEN;
-            break;
-
-        case PI:
-            if ( msg[i] == 'N') {
-                state = PIN;
-            }
-            else state = OPEN;
-            break;
-
-        case PIN:
-            if ( msg[i] == 'G') {
-                state = PING;
-            }
-            else state = OPEN;
-            break;
-
-        case PING:
-            i++;
-            while( msg[i] != ' ') {
-                i++;
-                token[j] = msg[i];
-                j++;
-            }
-            token[j] = '\0';
-            j=0;
-            token_s = token;
-            return {PING_T, token_s};
-            break;
-
-        case C:
-            if ( msg[i] == 'A' ) {
-                state = CA;
-            } else state = OPEN;
-            break;
-
-        case CA:
-            if ( msg[i] == 'P' ) {
-                state = CAP;
-            } else state = OPEN;
-            break;
-
-        case CAP:
-            state = OPEN;
-            return {CAP_T, " "};
-            break;
-
-        case M:
-            if(msg[i] == 'O') state = MO;
-            else state = OPEN;
-            break;
-
-        case MO:
-            if(msg[i] == 'D') state = MOD;
-            else state = OPEN;
-            break;
-
-        case MOD:
-            if(msg[i] == 'E') return {MODE_T, " "};
-            else state = OPEN;
-            break;
-
-        }
-    }
-    return {NONE_T, " "};
+    int i=0;
+    for( ; i<msg.length() && i<512 && msg[i]!=' '; i++ ) ; 
+    it = tokens.find(msg.substr(0,i));
+    if (it == tokens.end() ) return {0,""};
+    return {it->second,msg.substr((i+1),msg.length())};
 }
+
+void irc::message::set_all(std::string const & msg){
+    //skip tags for right now
+    // search for the optional source
+    std::string::size_type source_start;
+    std::string::size_type source_end;
+    std::string::size_type cmd_start;
+    std::string::size_type cmd_end;
+
+    std::map<std::string,int>::iterator it;
+
+    //source_start = msg.find(':');
+    if(msg[0]==':') {
+    //if(source_start != std::string::npos) {
+        source_end = msg.find(' ',0);
+        this->source = msg.substr(0,source_end);
+        cmd_start = source_end+1;
+    } else {
+        cmd_start = 0;
+    }
+
+    cmd_end = msg.find(' ',cmd_start);
+    if ( cmd_end == std::string::npos){
+        this->command = msg.substr(cmd_start,msg.size()-2);
+    }else{
+        this->command = msg.substr(cmd_start,(cmd_end-cmd_start));
+        this->parameters = msg.substr(cmd_end+1,(msg.size()-2-cmd_end+1));
+    }
+    it = tokens.find(this->command);
+    if (it==tokens.end()) this->cmd=0;
+    else this->cmd = it->second;
+}
+
+std::string irc::message::get_source(){
+    return this->source;
+}
+
+std::string irc::message::get_command(){
+    return this->command;
+}
+
+std::string irc::message::get_parameters(){
+    return this->parameters;
+}
+
+std::string irc::message::get_channel(){
+    std::string::size_type start;
+    std::string::size_type end;
+
+    start=this->parameters.find('#');
+    end  =this->parameters.size();
+
+    return this->parameters.substr(start,(end-start));
+}
+
+int irc::message::get_cmd(){
+    return this->cmd;
+}
+
+bool irc::message::has_source(){
+    return ! this->source.empty();
+}
+
+bool irc::message::has_parameters(){
+    return ! this->source.empty();
+}
+
+
