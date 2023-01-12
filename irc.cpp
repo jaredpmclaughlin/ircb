@@ -107,40 +107,38 @@ void irc::connection::join(std::string const & channel){
     this->send_str("JOIN "+channel);
 }
 
-void irc::connection::read_socket(){
-    this->insz=0;
+std::unique_ptr<std::string > irc::connection::read_socket(){
+    std::unique_ptr<std::string > tmp = std::make_unique<std::string>();
     int i=0;
     do {
-    //for( ; !((this->in_buf[i])=='\n'); i++) {
-        if( (this->insz=recv(this->sockfd, (void *)&(this->in_buf[i]),1,0))==-1 ){
+        if( (recv(this->sockfd, (void *)&(this->in_buf[i]),1,0))==-1 ){
             perror("recv");
             exit(1);
         }
         i++;
     } while(this->in_buf[i-1]!='\n');
-    this->insz=i;
-    this->in_buf[MAXDATASIZE]='\0'; //guard
+    this->in_buf[i+1]='\0'; //guard
+    tmp->assign(this->in_buf);
+    return std::move(tmp);
 }
 
 
-//irc::message & irc::connection::next_msg() {
 std::unique_ptr<irc::message> irc::connection::next_msg(){
-    this->read_socket();
+    std::unique_ptr<std::string > input = this->read_socket();
     std::unique_ptr<message> tmp = std::make_unique<message>();
-    tmp->set_all(this->in_buf);
+    tmp->set_all(*input);
     this->msg_list.push_back(std::move(tmp));
     tmp=std::move(this->msg_list.front()); 
     this->msg_list.pop_front();
-    //return *tmp;
     return std::move(tmp);
 };
 
 std::string & irc::message::toString(){
-    std::unique_ptr<std::string> tmp = std::make_unique<std::string>();
-    tmp->assign(this->source);
-    tmp->append(this->command);
-    tmp->append(this->parameters);
-    return *tmp;
+//    std::unique_ptr<std::string> tmp = std::make_unique<std::string>();
+    this->all.assign(this->source);
+    this->all.append(this->command);
+    this->all.append(this->parameters);
+    return (this->all);
 }
 
 std::map<std::string,int> tokens {

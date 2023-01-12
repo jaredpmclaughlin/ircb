@@ -89,13 +89,10 @@ private:
     std::string nick_s;
     int insz;
     char in_buf[MAXDATASIZE+1];
-    //char ms g_buf[MAXDATASIZE+1];
     std::unique_ptr<char[]> inbuf;
     //int sockfd;
-//  std::list<std::shared_ptr<message> > msg_list;
     std::list<std::unique_ptr<message> > msg_list;
-
-    void read_socket();
+    std::unique_ptr<std::string > read_socket();
 
 public:
     int sockfd;
@@ -109,7 +106,6 @@ public:
     std::string get_str();
     void pong(std::string const &);
     void join(std::string const &);
-//    message & next_msg();
     std::unique_ptr<message> next_msg();
 
 };
@@ -121,6 +117,7 @@ private:
     std::string command;
     std::string parameters;
     int cmd;
+    std::string all;
 public:
 //    void set_tags(std::string const &);
 //    void set_source(std::string const &);
