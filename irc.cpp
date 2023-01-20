@@ -107,6 +107,10 @@ void irc::connection::join(std::string const & channel){
     this->send_str("JOIN "+channel);
 }
 
+//void irc::channel::join(){
+ //   this->c_ref.send_str("JOIN "+name);
+//}
+
 std::unique_ptr<std::string > irc::connection::read_socket(){
     std::unique_ptr<std::string > tmp = std::make_unique<std::string>();
     int i=0;
@@ -121,7 +125,6 @@ std::unique_ptr<std::string > irc::connection::read_socket(){
     tmp->assign(this->in_buf);
     return std::move(tmp);
 }
-
 
 std::unique_ptr<irc::message> irc::connection::next_msg(){
     std::unique_ptr<std::string > input = this->read_socket();

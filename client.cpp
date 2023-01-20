@@ -39,7 +39,13 @@ int main(int argc, char *argv[])
 
     do {
         std::unique_ptr<irc::message> msg = to->next_msg(); 
-        std::cout<<msg->toString();
+    //    std::cout<<msg->toString();
+        std::cout<<msg->get_source();
+        std::cout<<" ";
+        std::cout<<msg->get_command();
+        std::cout<<" ";
+        std::cout<<msg->get_parameters();
+        std::cout<<std::endl;
 
         std::string tmp_msg = msg->get_command();
         tmp_msg.append(" ");

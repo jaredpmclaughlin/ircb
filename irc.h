@@ -90,7 +90,7 @@ private:
     int insz;
     char in_buf[MAXDATASIZE+1];
     std::unique_ptr<char[]> inbuf;
-    //int sockfd;
+//    int sockfd;
     std::list<std::unique_ptr<message> > msg_list;
     std::unique_ptr<std::string > read_socket();
 
@@ -98,15 +98,30 @@ public:
     int sockfd;
     connection(std::string const &, std::string const &);
     connection(std::string const &, int);
-    std::string name() {
-        return this->name_s;
-    };
+
+    std::string name() { return this->name_s; };
+    std::string nick() { return this->nick_s; };
+
     void handshake(std::string const&);
     void send_str(std::string const &);
     std::string get_str();
     void pong(std::string const &);
     void join(std::string const &);
     std::unique_ptr<message> next_msg();
+
+};
+
+class channel {
+private:
+    std::string name;
+    connection & c_ref;
+public:
+//    std::unique_ptr<message> next_msg();
+
+ //   void join();
+//    void part();
+//    void say(std::string msg);
+//    void say_to(std::string msg, std::string user);
 
 };
 
