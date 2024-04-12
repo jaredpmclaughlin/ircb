@@ -138,8 +138,9 @@ std::unique_ptr<irc::message> irc::connection::next_msg(){
   
     if(chan_list.size()>0 && tmp->get_cmd() == irc::PRIVMSG ) {
         for(std::list<std::unique_ptr<irc::channel> >::iterator it=this->chan_list.begin(); it!=this->chan_list.end(); ++it) {
-            if((tmp->get_parameters().find(it->get_name())) != std::string::npos ) {
-                std::cout<<tmp->get_param()<<std::endl; 
+            if((tmp->get_parameters().find((*it)->get_name())) != std::string::npos ) {
+                std::cout<<tmp->get_parameters()<<std::endl; 
+            }
         }
     }
     else this->msg_list.push_back(std::move(tmp));
@@ -148,7 +149,7 @@ std::unique_ptr<irc::message> irc::connection::next_msg(){
     return std::move(tmp);
 };
 
-irc::channel::get_name() {
+std::string irc::channel::get_name() {
     return this->name;
 }
 

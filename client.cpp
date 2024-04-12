@@ -5,6 +5,8 @@
 #include "args.h"
 #endif
 
+void connection_message(std::string serverName, int port);
+
 int main(int argc, char *argv[])
 {
 
@@ -12,13 +14,11 @@ int main(int argc, char *argv[])
     char buf[MAXDATASIZE+1];
     char line[MAXDATASIZE+1];
 
-    std::string port = std::string("6667");
+    //std::string port = std::string("6667");
     ircb::args.parse(argc, argv);
 
     std::shared_ptr<irc::connection> to = nullptr;
-    std::cout<<"Connecting to "<<ircb::args.serverName;
-    std::cout<<" on port "<<ircb::args.port<<" ... ";
-    std::cout<<std::endl<<std::endl;
+    connection_message(ircb::args.serverName,ircb::args.port);
 
     try {
         to = std::make_shared<irc::connection>(ircb::args.serverName,ircb::args.nickName,ircb::args.port);
@@ -76,5 +76,12 @@ int main(int argc, char *argv[])
     close(to->sockfd);
 #endif // _WIN64
     return 0;
+}
+
+void connection_message(std::string serverName, int port)
+{
+    std::cout<<"Connecting to "<<ircb::args.serverName;
+    std::cout<<" on port "<<ircb::args.port<<" ... ";
+    std::cout<<std::endl<<std::endl;
 }
 

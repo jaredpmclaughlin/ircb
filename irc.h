@@ -118,7 +118,7 @@ public:
 class channel {
 private:
     std::string name;
-    connection & c_ref;
+//    connection & c_ref;
 public:
     channel(std::string const &chanName);
     std::string get_name();
