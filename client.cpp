@@ -16,9 +16,12 @@ int main(int argc, char *argv[])
     ircb::args.parse(argc, argv);
 
     std::shared_ptr<irc::connection> to = nullptr;
+    std::cout<<"Connecting to "<<ircb::args.serverName;
+    std::cout<<" on port "<<ircb::args.port<<" ... ";
+    std::cout<<std::endl<<std::endl;
 
     try {
-        to = std::make_shared<irc::connection>(ircb::args.serverName,ircb::args.port);
+        to = std::make_shared<irc::connection>(ircb::args.serverName,ircb::args.nickName,ircb::args.port);
     }
 
     catch(std::runtime_error &e){
@@ -26,13 +29,9 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    std::cout<<"Connecting to "<<to->name()<<" ... ";
-    std::cout<<std::endl<<std::endl;
-
-    to->handshake(ircb::args.nickName);    
-
     std::cout<<"Handshake complete"<<std::endl;
     std::string val;
+
     int tok;
     int joined = 0;
     int pos=0;
@@ -40,17 +39,18 @@ int main(int argc, char *argv[])
     do {
         std::unique_ptr<irc::message> msg = to->next_msg(); 
     //    std::cout<<msg->toString();
-        std::cout<<msg->get_source();
+/*
+        std::cout<<" SOURCE "<<msg->get_source();
         std::cout<<" ";
-        std::cout<<msg->get_command();
+        std::cout<<" COMMAND "<<msg->get_command();
         std::cout<<" ";
-        std::cout<<msg->get_parameters();
+        std::cout<<" PARAMS "<<msg->get_parameters();
         std::cout<<std::endl;
 
         std::string tmp_msg = msg->get_command();
         tmp_msg.append(" ");
         tmp_msg.append(msg->get_parameters());
-        
+*/        
         switch(msg->get_cmd()) {
         default:
         case 0:
@@ -61,11 +61,11 @@ int main(int argc, char *argv[])
             std::cout<<"PONG "<<msg->get_parameters()<<std::endl;
             break;
         case irc::CAP:
-//            std::cout<<"CAP END"<<std::endl;
             to->send_str("CAP END");
             break;
         case irc::INVITE:
             to->join(msg->get_channel());
+            std::cout<<"Joined "<<std::endl;
             break;
         };
     } while (1);

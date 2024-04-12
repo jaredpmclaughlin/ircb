@@ -13,9 +13,9 @@ void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-irc::connection::connection(std::string const & host, int port) : connection{host, std::to_string(port) } {};
+irc::connection::connection(std::string const & host, std::string const &nick, int port) : connection{host, nick, std::to_string(port) } {};
 
-irc::connection::connection(std::string const & host, std::string const & port) {
+irc::connection::connection(std::string const & host, std::string const &nick, std::string const & port) {
 
     struct addrinfo *servinfo, *p;
 
@@ -73,6 +73,11 @@ irc::connection::connection(std::string const & host, std::string const & port) 
 */
     this->name_s = p->ai_canonname;
     freeaddrinfo(servinfo); // all done with this structure
+    // now let's handshake, or else abort and clean up
+    // this will have to throw something, but I'm not sure how to check
+    // if handshaking worked
+    this->nick_s = nick;
+    this->handshake(this->nick_s); 
 
 };
 
@@ -103,13 +108,13 @@ void irc::connection::pong(std::string const & token){
     this->send_str("PONG "+token);
 }
 
-void irc::connection::join(std::string const & channel){
-    this->send_str("JOIN "+channel);
+void irc::connection::join(std::string const & chan){
+    this->send_str("JOIN "+chan);
+    // check for success?
+    std::unique_ptr<channel> tmp = std::make_unique<channel>(chan);
+    this->chan_list.push_back(std::move(tmp));
+    
 }
-
-//void irc::channel::join(){
- //   this->c_ref.send_str("JOIN "+name);
-//}
 
 std::unique_ptr<std::string > irc::connection::read_socket(){
     std::unique_ptr<std::string > tmp = std::make_unique<std::string>();
@@ -130,14 +135,30 @@ std::unique_ptr<irc::message> irc::connection::next_msg(){
     std::unique_ptr<std::string > input = this->read_socket();
     std::unique_ptr<message> tmp = std::make_unique<message>();
     tmp->set_all(*input);
-    this->msg_list.push_back(std::move(tmp));
+  
+    if(chan_list.size()>0 && tmp->get_cmd() == irc::PRIVMSG ) {
+        for(std::list<std::unique_ptr<irc::channel> >::iterator it=this->chan_list.begin(); it!=this->chan_list.end(); ++it) {
+            if((tmp->get_parameters().find(it->get_name())) != std::string::npos ) {
+                std::cout<<tmp->get_param()<<std::endl; 
+        }
+    }
+    else this->msg_list.push_back(std::move(tmp));
     tmp=std::move(this->msg_list.front()); 
     this->msg_list.pop_front();
     return std::move(tmp);
 };
 
+irc::channel::get_name() {
+    return this->name;
+}
+
+irc::channel::channel(std::string const &chanName)
+{
+    this->name=chanName;
+}
+
+
 std::string & irc::message::toString(){
-//    std::unique_ptr<std::string> tmp = std::make_unique<std::string>();
     this->all.assign(this->source);
     this->all.append(this->command);
     this->all.append(this->parameters);
@@ -149,6 +170,7 @@ std::map<std::string,int> tokens {
     {"INVITE",irc::INVITE}, 
     {"CAP",irc::CAP}, 
     {"PING",irc::PING},
+    {"PRIVMSG",irc::PRIVMSG},
     {"NONE",0}
     };
 
