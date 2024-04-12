@@ -1,0 +1,29 @@
+An irc bot framework / library with an example client.
+
+To build on Linux,
+\begin{DoxyEnumerate}
+\item mkdir build
+\item cd build
+\item cmake ..
+\item make
+\end{DoxyEnumerate}
+
+This will make the binary \char`\"{}ircb\char`\"{} and any test binaries.
+
+To build on Windows with M\+S\+VC,
+\begin{DoxyEnumerate}
+\item clone from git
+\item build
+\end{DoxyEnumerate}
+
+You will have to set up your project to pass arguments to the binary.
+
+To build on Mac OS X with V\+S\+Code,
+\begin{DoxyEnumerate}
+\item clone from git
+\item build with gcc -\/ it will not build with Apple\+Clang
+\end{DoxyEnumerate}
+
+Checking test coverage can be done by running the following in the build directory\+:
+
+gcovr -\/r .. -\/e \+\_\+deps 

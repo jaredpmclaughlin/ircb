@@ -65,7 +65,7 @@ enum cmd
     HELP,
     INFO,
     MODE,
-    PRIVMSG,
+    PRIVMSG, // handled
     NOTICE,
     WHO,
     WHOIS,
@@ -81,6 +81,7 @@ enum cmd
 };
 
 class message;
+class channel;
 
 class connection {
 private:
@@ -90,23 +91,43 @@ private:
     int insz;
     char in_buf[MAXDATASIZE+1];
     std::unique_ptr<char[]> inbuf;
-    //int sockfd;
+//    int sockfd;
     std::list<std::unique_ptr<message> > msg_list;
+    std::list<std::unique_ptr<channel> > chan_list;
     std::unique_ptr<std::string > read_socket();
 
 public:
     int sockfd;
-    connection(std::string const &, std::string const &);
-    connection(std::string const &, int);
-    std::string name() {
-        return this->name_s;
-    };
+    connection(std::string const &serverName, std::string const &nick, std::string const &portString);
+    connection(std::string const &serverName, std::string const &nick, int port); // change to unsigned
+
+    std::string name() { return this->name_s; };
+    void name(std::string const &name);
+    std::string nick() { return this->nick_s; };
+    void nick(std::string const &nick);
+
     void handshake(std::string const&);
     void send_str(std::string const &);
     std::string get_str();
     void pong(std::string const &);
-    void join(std::string const &);
+    void join(std::string const &channel);
     std::unique_ptr<message> next_msg();
+
+};
+
+class channel {
+private:
+    std::string name;
+    connection & c_ref;
+public:
+    channel(std::string const &chanName);
+    std::string get_name();
+//    std::unique_ptr<message> next_msg();
+
+ //   void join();
+//    void part();
+//    void say(std::string msg);
+//    void say_to(std::string msg, std::string user);
 
 };
 
