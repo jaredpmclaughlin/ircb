@@ -118,11 +118,11 @@ public:
 class channel {
 private:
     std::string name;
-    connection & c_ref;
+    //connection & c_ref;
 public:
     channel(std::string const &chanName);
     std::string get_name();
-//    std::unique_ptr<message> next_msg();
+    std::unique_ptr<message> next_msg();
 
  //   void join();
 //    void part();

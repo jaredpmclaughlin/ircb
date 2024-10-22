@@ -2,6 +2,7 @@
 #include "irc.h"
 #endif
 #include <iostream>
+#include <cstring>
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -18,8 +19,10 @@ irc::connection::connection(std::string const & host, std::string const &nick, i
 irc::connection::connection(std::string const & host, std::string const &nick, std::string const & port) {
 
     struct addrinfo *servinfo, *p;
+    struct addrinfo hints;
+    memset(&hints,0,sizeof(hints));
 
-    struct addrinfo hints = {
+    hints = {
         .ai_flags = AI_CANONNAME,
         .ai_family = AF_UNSPEC,
         .ai_socktype = SOCK_STREAM
@@ -32,54 +35,18 @@ irc::connection::connection(std::string const & host, std::string const &nick, s
         throw std::runtime_error(gai_strerror(rv));
     }
 
-    // loop through all the results and connect to the first we can
-    for(p = servinfo; p != NULL; p = p->ai_next) {
+    if( (this->sockfd = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol)) == -1 )
+        throw std::runtime_error("Error in socket().");
 
-        if ((this->sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1 ) {
-            continue;
-        }
-        
-        if (connect(this->sockfd, p->ai_addr, p->ai_addrlen) == -1) {
-#ifdef _WIN64
-            closesocket(this->sockfd);
-#else
-            close(this->sockfd);
-#endif
-
-            continue;
-        }
-
-        break;
-    }
-
-    if (p==NULL) {
-        throw std::runtime_error("Connection error.");
-    }
-
-    inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr), addressbuff, sizeof addressbuff);
-
-    socklen_t optsz = sizeof(insz); 
-    getsockopt(this->sockfd, SOL_SOCKET, SO_RCVBUF, (void *)&insz, &optsz); // let's make our buffers match
-    this->inbuf = std::make_unique<char[]>(this->insz); 
-/*
-    int val;
-    if((val=fcntl(this->sockfd,F_GETFL,0))<0) 
-        throw std::runtime_error("Connection error getting file descriptor flags.");
-
-    val |= O_NONBLOCK;
-
-    if( fcntl(this->sockfd,F_SETFL,val)<0) 
-        throw std::runtime_error("Connection error setting file descriptor flags."); 
-*/
-    this->name_s = p->ai_canonname;
+    this->name_s = servinfo->ai_canonname;
+    if (connect(this->sockfd, servinfo->ai_addr, servinfo->ai_addrlen)) 
+	    throw std::runtime_error("Error in 'connect()'.\n");
     freeaddrinfo(servinfo); // all done with this structure
-    // now let's handshake, or else abort and clean up
-    // this will have to throw something, but I'm not sure how to check
-    // if handshaking worked
+			    //
     this->nick_s = nick;
     this->handshake(this->nick_s); 
 
-};
+}
 
 // a raw interface for testing / debugging
 void irc::connection::send_str(std::string const & msg) {
@@ -138,17 +105,17 @@ std::unique_ptr<irc::message> irc::connection::next_msg(){
   
     if(chan_list.size()>0 && tmp->get_cmd() == irc::PRIVMSG ) {
         for(std::list<std::unique_ptr<irc::channel> >::iterator it=this->chan_list.begin(); it!=this->chan_list.end(); ++it) {
-            if((tmp->get_parameters().find(it->get_name())) != std::string::npos ) {
-                std::cout<<tmp->get_param()<<std::endl; 
+            if((tmp->get_parameters().find((*it)->get_name())) != std::string::npos ) {
+                std::cout<<tmp->get_parameters()<<std::endl; 
+            }
         }
-    }
-    else this->msg_list.push_back(std::move(tmp));
+    } else this->msg_list.push_back(std::move(tmp));
     tmp=std::move(this->msg_list.front()); 
     this->msg_list.pop_front();
     return std::move(tmp);
-};
+}
 
-irc::channel::get_name() {
+std::string irc::channel::get_name() {
     return this->name;
 }
 
@@ -250,5 +217,4 @@ bool irc::message::has_source(){
 bool irc::message::has_parameters(){
     return ! this->source.empty();
 }
-
 
